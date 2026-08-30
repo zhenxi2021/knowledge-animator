@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>__TITLE__</title>
+<style>
+/* ============================================================
+   1. 设计令牌 —— 改主题只改这里
+   ============================================================ */
+:root{
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --r:12px; --ease:cubic-bezier(.22,.61,.36,1);
+  --t-fast:.18s; --t:.32s; --t-slow:.5s;
+}
+[data-theme="dark"]{
+  --bg:#0a0e13; --bg2:#0e141b; --panel:#121a23; --panel2:#18222e; --panel3:#1e2a37;
+  --ink:#e7eef6; --ink2:#c3d0de; --mute:#7f91a5; --faint:#5a6b7d;
+  --line:#1e2a37; --line2:#2b3b4c; --line3:#3a4d61;
+  --acc:#4cc2ff; --acc2:#a78bfa; --warn:#ffb454; --ok:#3ddc97; --bad:#ff6b6b;
+  --on-acc:#04121b;
+  --shadow:0 18px 50px -18px rgba(0,0,0,.85);
+  --grid:rgba(255,255,255,.028);
+}
+[data-theme="light"]{
+  --bg:#f4f6f9; --bg2:#ffffff; --panel:#ffffff; --panel2:#f7f9fc; --panel3:#eef2f7;
+  --ink:#0d1520; --ink2:#26333f; --mute:#5d6e80; --faint:#8b9bad;
+  --line:#e2e8ef; --line2:#ccd7e2; --line3:#b3c2d1;
+  --acc:#0b74d1; --acc2:#7c3aed; --warn:#b45309; --ok:#0f8a5f; --bad:#c62828;
+  --on-acc:#ffffff;
+  --shadow:0 18px 44px -20px rgba(16,32,48,.28);
+  --grid:rgba(16,32,48,.032);
+}
+
+/* ============================================================
+   2. 骨架
+   ============================================================ */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;font-family:var(--sans);background:var(--bg);color:var(--ink);
+  display:flex;flex-direction:column;overflow:hidden;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(circle at 1px 1px, var(--grid) 1px, transparent 0);
+  background-size:26px 26px;
+}
+::selection{background:var(--acc);color:var(--on-acc)}
+
+.topbar{
+  position:relative;z-index:6;flex:0 0 54px;display:flex;align-items:center;gap:14px;
+  padding:0 18px;border-bottom:1px solid var(--line);background:var(--bg2);
+}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+.brand .pip{width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc);flex:none}
+.brand b{font-size:14.5px;font-weight:650;letter-spacing:.2px;white-space:nowrap}
+.brand .sub{font:500 11.5px/1 var(--mono);color:var(--faint);letter-spacing:.6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hint{margin-left:auto;font:500 11px/1 var(--mono);color:var(--faint);letter-spacing:.3px;white-space:nowrap}
+.hint kbd{
+  font:inherit;border:1px solid var(--line2);border-bottom-width:2px;border-radius:4px;
+  padding:2px 5px;color:var(--mute);background:var(--panel2);margin:0 1px;
+}
+.pbar{position:absolute;left:0;bottom:-1px;height:2px;background:var(--acc);width:0;transition:width var(--t) var(--ease);z-index:2}
+
+.stage{position:relative;z-index:1;flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;padding:20px 26px 10px}
+.slide{width:100%;max-width:1120px;max-height:100%;display:flex;flex-direction:column;gap:12px;animation:enter var(--t-slow) var(--ease) both}
+@keyframes enter{from{opacity:0;transform:translateY(12px) scale(.995)}to{opacity:1;transform:none}}
+
+.dock{
+  position:relative;z-index:6;flex:0 0 58px;display:flex;align-items:center;gap:8px;
+  padding:0 16px;border-top:1px solid var(--line);background:var(--bg2);
+}
+.btn{
+  font:600 12.5px/1 var(--sans);color:var(--ink2);background:var(--panel2);
+  border:1px solid var(--line2);border-radius:8px;padding:8px 12px;cursor:pointer;
+  transition:all var(--t-fast) var(--ease);white-space:nowrap;
+}
+.btn:hover{background:var(--panel3);border-color:var(--line3);color:var(--ink)}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.35;cursor:not-allowed}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:var(--on-acc);min-width:88px;text-align:center}
+.btn.primary:hover{filter:brightness(1.1)}
+.spd{display:flex;gap:2px;background:var(--panel2);border:1px solid var(--line2);border-radius:8px;padding:3px}
+.spd button{
+  font:600 11px/1 var(--mono);color:var(--faint);background:none;border:0;border-radius:5px;
+  padding:5px 7px;cursor:pointer;transition:all var(--t-fast)
+}
+.spd button:hover{color:var(--ink2)}
+.spd button.on{background:var(--acc);color:var(--on-acc)}
+.pager{margin-left:auto;font:600 12px/1 var(--mono);color:var(--mute);letter-spacing:.5px;white-space:nowrap}
+
+/* ============================================================
+   3. 页头 / 页脚（通用）
+   ============================================================ */
+.head{display:flex;flex-direction:column;gap:5px;flex:none}
+.meta{display:flex;align-items:center;gap:10px}
+.num{font:700 11px/1 var(--mono);color:var(--on-acc);background:var(--acc);padding:4px 7px;border-radius:5px;letter-spacing:.5px}
+.eyebrow{font:600 11.5px/1 var(--mono);color:var(--acc);letter-spacing:1.4px;text-transform:uppercase}
+.h1{margin:0;font-size:23px;font-weight:650;letter-spacing:-.2px;line-height:1.25}
+.lede{margin:0;font-size:13.5px;line-height:1.6;color:var(--mute);max-width:82ch}
+.foot{flex:none;display:flex;flex-direction:column;gap:9px;padding-top:2px}
+.dots{display:flex;gap:5px;align-items:center;min-height:8px}
+.dot-i{width:6px;height:6px;border-radius:50%;background:var(--line2);transition:all var(--t) var(--ease)}
+.dot-i.on{background:var(--acc);transform:scale(1.3)}
+.caption{
+  min-height:42px;font-size:13.5px;line-height:1.55;color:var(--ink2);
+  border-left:2px solid var(--line2);padding:2px 0 2px 12px;
+  opacity:0;transform:translateY(4px);transition:opacity var(--t) var(--ease),transform var(--t) var(--ease);
+}
+.caption.show{opacity:1;transform:none}
+.caption:empty{border-color:transparent}
+
+/* ============================================================
+   4. 图示容器
+   ============================================================ */
+figure{
+  margin:0;flex:0 1 auto;min-height:0;position:relative;
+  border:1px solid var(--line);border-radius:14px;
+  background:linear-gradient(180deg,var(--panel) 0%,var(--bg2) 100%);
+  padding:8px;overflow:hidden;box-shadow:var(--shadow);
+}
+figure svg{width:100%;height:auto;max-height:56vh;display:block}
+
+/* ---- SVG 元素默认样式（作者只需写结构和 id） ---- */
+.node{opacity:0;transform:translateY(8px);transition:opacity var(--t-slow) var(--ease),transform var(--t-slow) var(--ease)}
+.node.is-in{opacity:1;transform:none}
+.node.is-dim{opacity:.26}
+.node.is-focus .box{stroke:var(--acc);stroke-width:2}
+.node.is-focus .t{fill:var(--acc)}
+.node.is-focus{filter:url(#glow)}
+.node rect{fill:var(--panel2);stroke:var(--line2);stroke-width:1.25;transition:all var(--t) var(--ease)}
+.node circle{fill:var(--acc);stroke:var(--bg2);stroke-width:2}
+.node .box{fill:var(--panel2);stroke:var(--line2);stroke-width:1.25;transition:all var(--t) var(--ease)}
+.node .q{fill:var(--line3);stroke:none}
+.node .q.hot{fill:var(--warn)} .node .q.bad{fill:var(--bad)}
+.node .box.acc{stroke:var(--acc)} .node .box.warn{stroke:var(--warn)}
+.node .box.ok{stroke:var(--ok)}   .node .box.bad{stroke:var(--bad)}
+.node .box.ghost{fill:none;stroke-dasharray:4 4}
+.node .t{font:600 13.5px var(--sans);fill:var(--ink);text-anchor:middle;transition:fill var(--t)}
+.node .s{font:500 10.5px var(--mono);fill:var(--mute);text-anchor:middle}
+.node.is-flash .box{animation:flash .55s var(--ease)}
+@keyframes flash{0%,100%{opacity:.3}45%{opacity:1}}
+
+.edge{fill:none;stroke:var(--line2);stroke-width:1.6;transition:stroke var(--t),stroke-width var(--t),opacity var(--t-slow)}
+.edge.dash{stroke-dasharray:5 5}
+.edge.acc{stroke:var(--acc)} .edge.warn{stroke:var(--warn)} .edge.ok{stroke:var(--ok)} .edge.bad{stroke:var(--bad)}
+.edge.is-flow{stroke:var(--acc);stroke-width:2.6;stroke-dasharray:8 8;animation:flow .75s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-16}}
+
+.lane{fill:none;stroke:var(--line);stroke-width:1;stroke-dasharray:3 5}
+.lane-box{fill:var(--panel);fill-opacity:.5;stroke:var(--line);stroke-width:1}
+.lane-t{font:600 11px var(--mono);fill:var(--faint);letter-spacing:1px}
+.em{font:600 11.5px var(--mono);fill:var(--mute)}
+.em.acc{fill:var(--acc)} .em.warn{fill:var(--warn)} .em.ok{fill:var(--ok)}
+.cap{font:500 11px var(--sans);fill:var(--faint);text-anchor:middle}
+
+.pkt circle{fill:var(--acc);stroke:var(--bg2);stroke-width:2}
+.pkt .chip{fill:var(--acc);stroke:var(--bg2);stroke-width:1.5}
+.pkt text{font:700 11px var(--mono);fill:var(--on-acc);text-anchor:middle}
+
+.tag rect{fill:var(--acc);fill-opacity:.14;stroke:var(--acc);stroke-width:1}
+.tag text{font:600 11.5px var(--sans);fill:var(--acc);text-anchor:middle}
+.tag[data-tone="warn"] rect{fill:var(--warn);fill-opacity:.14;stroke:var(--warn)}
+.tag[data-tone="warn"] text{fill:var(--warn)}
+.tag[data-tone="ok"] rect{fill:var(--ok);fill-opacity:.14;stroke:var(--ok)}
+.tag[data-tone="ok"] text{fill:var(--ok)}
+.tag[data-tone="bad"] rect{fill:var(--bad);fill-opacity:.14;stroke:var(--bad)}
+.tag[data-tone="bad"] text{fill:var(--bad)}
+
+/* ---- 全局 defs 着色（marker / filter 在 stage 之外，必须靠 CSS 上色） ---- */
+#ar path{fill:var(--line3)} #ar-mute path{fill:var(--line2)}
+#ar-acc path{fill:var(--acc)} #ar-warn path{fill:var(--warn)}
+#ar-ok path{fill:var(--ok)}   #ar-bad path{fill:var(--bad)}
+#glow feDropShadow{flood-color:var(--acc)}
+
+/* ============================================================
+   5. 各页型
+   ============================================================ */
+.cover{display:flex;flex-direction:column;justify-content:center;gap:14px;flex:1;padding:10px 4px}
+.cover .kicker{font:600 11.5px var(--mono);color:var(--acc);letter-spacing:2.4px;text-transform:uppercase}
+.cover .big{margin:0;font-size:clamp(30px,4.4vw,50px);font-weight:680;letter-spacing:-1px;line-height:1.12}
+.cover .sub{margin:0;font-size:16px;color:var(--mute);line-height:1.6;max-width:70ch}
+.cover .chips{display:flex;flex-wrap:wrap;gap:7px}
+.cover .chips span{
+  font:500 11.5px var(--mono);color:var(--mute);border:1px solid var(--line2);
+  border-radius:999px;padding:5px 11px;background:var(--panel2)
+}
+.cover .coverhint{margin-top:6px;font:500 11.5px var(--mono);color:var(--faint)}
+
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.part{
+  display:flex;flex-direction:column;gap:6px;text-align:left;cursor:pointer;
+  background:var(--panel2);border:1px solid var(--line2);border-radius:var(--r);
+  padding:14px 15px;transition:all var(--t) var(--ease);font-family:inherit;
+}
+.part:hover{background:var(--panel3);border-color:var(--acc);transform:translateY(-2px)}
+.part .pn{font:700 11px var(--mono);color:var(--acc);letter-spacing:1.2px}
+.part b{font-size:15px;font-weight:640;color:var(--ink)}
+.part .pd{font-size:12.5px;line-height:1.55;color:var(--mute)}
+.part .pt{margin-top:2px;font:500 10.5px var(--mono);color:var(--faint)}
+
+.cmp{--cols:170px repeat(var(--n),1fr);display:flex;flex-direction:column;gap:0;
+  border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--panel)}
+.cmp .ch{
+  font:600 12px var(--mono);letter-spacing:.6px;color:var(--mute);
+  padding:10px 14px;background:var(--panel3);border-bottom:1px solid var(--line)
+}
+.cr{display:grid;grid-template-columns:var(--cols);border-bottom:1px solid var(--line);
+  opacity:.42;transition:opacity var(--t) var(--ease),background var(--t)}
+.cr:last-child{border-bottom:0}
+.cr.on{opacity:1;background:var(--panel2)}
+.cr.on .ck{color:var(--acc);box-shadow:inset 2px 0 0 var(--acc)}
+.ck{font:600 12.5px var(--sans);color:var(--mute);padding:11px 14px;transition:all var(--t)}
+.cv{font-size:13px;line-height:1.55;color:var(--ink2);padding:11px 14px;border-left:1px solid var(--line)}
+.cv code{font:600 12px var(--mono);color:var(--acc);background:none;padding:0}
+
+pre.code{
+  margin:0;flex:0 1 auto;min-height:0;overflow:auto;background:var(--panel);
+  border:1px solid var(--line);border-radius:var(--r);padding:12px 0;
+  font:500 12.5px/1.62 var(--mono);counter-reset:none;
+}
+pre.code .ln{display:block;white-space:pre;min-height:1.62em;padding:0 14px 0 12px;
+  border-left:2px solid transparent;color:var(--mute);opacity:.6;
+  transition:opacity var(--t),background var(--t),border-color var(--t),color var(--t)}
+pre.code .ln.on{opacity:1;color:var(--ink);background:var(--panel2);border-left-color:var(--acc)}
+
+.lab{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start}
+.lab figure{max-height:none}
+.side{display:flex;flex-direction:column;gap:12px;background:var(--panel);
+  border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.prm{display:flex;flex-direction:column;gap:5px}
+.prm .pl{display:flex;align-items:baseline;gap:8px;font:600 11.5px var(--mono);color:var(--mute)}
+.prm .pl b{margin-left:auto;font:700 13px var(--mono);color:var(--acc)}
+.prm input[type=range]{width:100%;accent-color:var(--acc);cursor:pointer}
+.readout{display:flex;flex-direction:column;gap:1px;border-top:1px solid var(--line);padding-top:10px}
+.readout div{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0}
+.readout span{color:var(--mute)} .readout b{font:600 12px var(--mono);color:var(--ink)}
+.insight{font-size:12.5px;line-height:1.6;color:var(--ink2);border-left:2px solid var(--warn);padding-left:10px}
+
+.idx{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:8px}
+.idx a{
+  display:flex;flex-direction:column;gap:3px;text-decoration:none;padding:11px 13px;
+  border:1px solid var(--line);border-radius:9px;background:var(--panel);transition:all var(--t) var(--ease)
+}
+.idx a:hover{border-color:var(--acc);background:var(--panel2);transform:translateX(2px)}
+.idx code{font:600 12.5px var(--mono);color:var(--acc)}
+.idx span{font-size:12px;color:var(--mute)}
+
+.end{flex:1;display:flex;flex-direction:column;justify-content:center;gap:18px;max-width:80ch}
+.end h2{margin:0;font-size:26px;font-weight:660;letter-spacing:-.3px}
+.end ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:11px}
+.end li{font-size:15px;line-height:1.62;color:var(--ink2)}
+.end li::marker{color:var(--acc);font:700 14px var(--mono)}
+
+/* ============================================================
+   6. 目录浮层
+   ============================================================ */
+.menu{
+  position:fixed;inset:0;z-index:20;background:rgba(4,8,12,.72);backdrop-filter:blur(8px);
+  display:flex;flex-direction:column;padding:44px 6vw;gap:16px;overflow:auto;
+  animation:fade var(--t) var(--ease) both
+}
+.menu[hidden]{display:none}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.menu h3{margin:0;font:600 11.5px var(--mono);color:var(--faint);letter-spacing:2px;text-transform:uppercase}
+.menu .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:9px}
+.menu button{
+  display:flex;gap:9px;align-items:baseline;text-align:left;cursor:pointer;font-family:inherit;
+  background:var(--panel);border:1px solid var(--line2);border-radius:9px;padding:11px 13px;
+  color:var(--ink2);transition:all var(--t-fast) var(--ease)
+}
+.menu button:hover{border-color:var(--acc);background:var(--panel2);color:var(--ink)}
+.menu button.on{border-color:var(--acc);box-shadow:inset 2px 0 0 var(--acc)}
+.menu button i{font:700 10.5px var(--mono);color:var(--acc);font-style:normal;flex:none}
+.menu button span{font-size:13px;line-height:1.4}
+.menu .close{align-self:flex-start;margin-top:4px}
+
+@media (max-width:860px){
+  .lab{grid-template-columns:1fr}
+  .hint{display:none}
+  .h1{font-size:19px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+
+<!-- 全局 defs：所有 SVG 通过 url(#ar) 引用，marker 的配色由 CSS 控制以支持换肤 -->
+<svg id="__defs" width="0" height="0" aria-hidden="true" style="position:absolute;left:-9999px">
+  <defs>
+    <marker id="ar"       viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z"/></marker>
+    <marker id="ar-mute"  viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z"/></marker>
+    <marker id="ar-acc"   viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z"/></marker>
+    <marker id="ar-warn"  viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z"/></marker>
+    <marker id="ar-ok"    viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z"/></marker>
+    <marker id="ar-bad"   viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z"/></marker>
+    <filter id="glow" x="-70%" y="-70%" width="240%" height="240%">
+      <feDropShadow dx="0" dy="0" stdDeviation="5" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+</svg>
+
+<header class="topbar">
+  <div class="brand"><span class="pip"></span><b id="brand"></b><span class="sub" id="brandSub"></span></div>
+  <div class="hint">
+    <kbd>←</kbd><kbd>→</kbd> 步进 · <kbd>⇧</kbd>+<kbd>←</kbd><kbd>→</kbd> 翻页 ·
+    <kbd>空格</kbd> 播放 · <kbd>M</kbd> 目录 · <kbd>F</kbd> 全屏 · <kbd>T</kbd> 主题
+  </div>
+  <div class="pbar" id="pbar"></div>
+</header>
+
+<main class="stage" id="stage"></main>
+
+<footer class="dock">
+  <button class="btn" data-act="menu">目录</button>
+  <button class="btn" data-act="prev">← 上一步</button>
+  <button class="btn primary" data-act="play">▶ 播放</button>
+  <button class="btn" data-act="next">下一步 →</button>
+  <div class="spd" id="spd">
+    <button data-spd="0.5">0.5×</button>
+    <button data-spd="1" class="on">1×</button>
+    <button data-spd="1.5">1.5×</button>
+    <button data-spd="2">2×</button>
+  </div>
+  <div class="pager" id="pager"></div>
+</footer>
+
+<div class="menu" id="menu" hidden>
+  <h3>课程目录</h3>
+  <div class="grid" id="menuGrid"></div>
+  <button class="btn close" data-act="menu">关闭 (Esc)</button>
+</div>
+
+<script>
+/* ============================================================
+   课程内容（由 knowledge-animator 构建时注入）
+   ============================================================ */
+/*__DECK__*/
+
+/* ============================================================
+   运行时引擎：渲染 · 时间轴 · 导航 · 交互实验室
+   ============================================================ */
+(function(){
+"use strict";
+const SVGNS = "http://www.w3.org/2000/svg";
+const stage = document.getElementById('stage');
+const pager = document.getElementById('pager');
+const pbar  = document.getElementById('pbar');
+const menu  = document.getElementById('menu');
+const btnPlay = document.querySelector('[data-act="play"]');
+
+const n = DECK.slides.length;
+const S = { page:0, step:0, playing:false, speed:1, timer:null };
+const LS_THEME = 'ka-theme-v1';
+
+/* ---------- 小工具 ---------- */
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+const toArr = x => x==null ? [] : (Array.isArray(x) ? x : [x]);
+const esc = s => String(s).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const q  = (root,sel)=>root.querySelector(sel);
+const qa = (root,sel)=>[...root.querySelectorAll(sel)];
+const byId = (root,id)=>{ try{ return root.querySelector('#'+CSS.escape(id)) }catch(e){ return null } };
+const svgEl = (tag,attrs)=>{ const e=document.createElementNS(SVGNS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); return e };
+const stepsOf = s => Array.isArray(s.steps) ? s.steps : [];
+const easeInOut = t => t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
+
+/* ---------- 页头 / 页脚 ---------- */
+function headHtml(s){
+  if(!s.title) return '';
+  return `<div class="head">
+    <div class="meta">
+      ${s.num?`<span class="num">${esc(s.num)}</span>`:''}
+      ${s.eyebrow?`<span class="eyebrow">${esc(s.eyebrow)}</span>`:''}
+    </div>
+    <h1 class="h1">${s.title}</h1>
+    ${s.lede?`<p class="lede">${s.lede}</p>`:''}
+  </div>`;
+}
+function footHtml(s){
+  const st = stepsOf(s);
+  return `<div class="foot">
+    <div class="dots">${st.map(()=>'<i class="dot-i"></i>').join('')}</div>
+    <div class="caption"></div>
+  </div>`;
+}
+function wrap(s, body){
+  return `<div class="slide">${headHtml(s)}${body}${ (s.kind==='cover'||s.kind==='end') ? '' : footHtml(s) }</div>`;
+}
+
+/* ---------- 各页型 ---------- */
+const RENDER = {
+  cover: s => wrap(s, `<div class="cover">
+      <div class="kicker">${esc(s.kicker||'INTERACTIVE COURSE')}</div>
+      <h1 class="big">${s.title}</h1>
+      ${s.subtitle?`<p class="sub">${s.subtitle}</p>`:''}
+      <div class="chips">${(s.chips||[]).map(c=>`<span>${esc(c)}</span>`).join('')}</div>
+      ${s.hint?`<div class="coverhint">${s.hint}</div>`:''}
+    </div>`),
+
+  map: s => wrap(s, `<div class="map">${(s.parts||[]).map(p=>`
+      <button class="part" data-goto="${esc(p.goto)}">
+        <span class="pn">${esc(p.num||'')}</span>
+        <b>${p.title}</b>
+        <span class="pd">${p.desc||''}</span>
+        ${p.pages?`<span class="pt">${p.pages.join(' · ')}</span>`:''}
+      </button>`).join('')}</div>`),
+
+  scene: s => wrap(s, `<figure>${s.svg}</figure>`),
+
+  compare: s => {
+    const cols = `170px repeat(${s.cols.length},1fr)`;
+    return wrap(s, `<div class="cmp" style="--n:${s.cols.length}">
+      <div class="ch" style="display:grid;grid-template-columns:${cols}"><div></div>${
+        s.cols.map(c=>`<div>${c}</div>`).join('')}</div>
+      ${s.rows.map((r,i)=>`<div class="cr" data-row="${i}">${[`<div class="ck">${r.k}</div>`]
+        .concat(r.v.map(v=>`<div class="cv">${v}</div>`)).join('')}</div>`).join('')}
+    </div>`);
+  },
+
+  code: s => wrap(s, `<pre class="code"><code>${esc(s.code||'').split('\n')
+      .map((l,i)=>`<span class="ln" data-line="${i+1}">${l||' '}</span>`).join('')}</code></pre>`),
+
+  lab: s => wrap(s, `<div class="lab">
+      <figure id="labFig"></figure>
+      <div class="side">
+        ${(s.params||[]).map(p=>`
+          <label class="prm">
+            <span class="pl">${esc(p.label)}<b id="v_${esc(p.id)}">${p.value}</b></span>
+            <input type="range" id="p_${esc(p.id)}" min="${p.min}" max="${p.max}"
+                   step="${p.step||1}" value="${p.value}">
+          </label>`).join('')}
+        <div class="readout" id="labOut"></div>
+        <div class="insight" id="labInsight"></div>
+      </div>
+    </div>`),
+
+  index: s => wrap(s, `<ul class="idx">${(s.items||[]).map(it=>`
+      <li><a href="${it.url}" target="_blank" rel="noopener">
+        <code>${esc(it.label)}</code><span>${esc(it.desc||'')}</span></a></li>`).join('')}</ul>`),
+
+  end: s => `<div class="slide">${headHtml(s)}<div class="end">
+      <ol>${(s.points||[]).map(p=>`<li>${p}</li>`).join('')}</div></div>`
+};
+
+/* ---------- 渲染 ---------- */
+function renderSlide(){
+  const s = DECK.slides[S.page];
+  stage.innerHTML = RENDER[s.kind] ? RENDER[s.kind](s) : `<div class="slide">未知页型：${s.kind}</div>`;
+  if(s.kind === 'lab') bindLab(s);
+}
+
+function bindLab(s){
+  const fig = q(stage,'#labFig'), out = q(stage,'#labOut'), ins = q(stage,'#labInsight');
+  const read = () => Object.fromEntries((s.params||[]).map(p=>{
+    const v = Number(byId(stage,'p_'+p.id).value);
+    byId(stage,'v_'+p.id).textContent = v;
+    return [p.id, v];
+  }));
+  const update = () => {
+    const v = read();
+    if(typeof s.svg === 'function') fig.innerHTML = s.svg(v);
+    const rd = typeof s.readouts === 'function' ? s.readouts(v) : [];
+    out.innerHTML = (rd||[]).map(r=>`<div><span>${esc(r.k)}</span><b>${esc(r.v)}</b></div>`).join('');
+    ins.innerHTML = typeof s.insight === 'function' ? s.insight(v) : '';
+  };
+  qa(stage,'.prm input[type=range]').forEach(el=>el.addEventListener('input', update));
+  update();
+}
+
+/* ---------- 步骤应用 ---------- */
+function applyStep(animate){
+  const s = DECK.slides[S.page], st = stepsOf(s);
+  const root = stage.firstElementChild;
+  if(!root) return;
+
+  // 解说词
+  const cap = q(root,'.caption');
+  if(cap){
+    const note = (st[S.step] && st[S.step].note) || s.note || '';
+    if(cap.textContent !== note){
+      cap.classList.remove('show');
+      cap.textContent = note;                                  // 内容同步落定，便于截图/自动化断言
+      if(note) requestAnimationFrame(()=>cap.classList.add('show'));
+    }
+  }
+  qa(root,'.dot-i').forEach((d,i)=>d.classList.toggle('on', i <= S.step));
+
+  const cur = st[S.step] || {};
+  if(s.kind === 'scene')      sceneStep(s, st, cur, animate !== false);
+  else if(s.kind === 'compare') qa(root,'[data-row]').forEach(r=>
+      r.classList.toggle('on', toArr(cur.rows).includes(Number(r.dataset.row))));
+  else if(s.kind === 'code')   qa(root,'.ln').forEach(l=>
+      l.classList.toggle('on', toArr(cur.lines).includes(Number(l.dataset.line))));
+}
+
+function sceneStep(s, st, cur, animate){
+  const svg = q(stage,'figure svg');
+  if(!svg) return;
+  const nodes = qa(svg,'.node[id]');
+
+  // 1) 出场：出现在任何 enter 里的节点初始隐藏；enter/exit 累积
+  const everEntered = new Set();
+  st.forEach(x=>toArr(x.enter).forEach(id=>everEntered.add(id)));
+  const shown = new Set();
+  for(let k=0;k<=S.step;k++){
+    toArr(st[k].enter).forEach(id=>shown.add(id));
+    toArr(st[k].exit ).forEach(id=>shown.delete(id));
+  }
+  nodes.forEach(nd=>nd.classList.toggle('is-in', !everEntered.has(nd.id) || shown.has(nd.id)));
+
+  // 2) 聚焦 / 淡出：当步绝对生效
+  nodes.forEach(nd=>nd.classList.remove('is-focus','is-dim'));
+  toArr(cur.focus).forEach(id=>byId(svg,id)?.classList.add('is-focus'));
+  toArr(cur.dim  ).forEach(id=>byId(svg,id)?.classList.add('is-dim'));
+
+  // 3) 文本改写：累积
+  const labels = new Map();
+  for(let k=0;k<=S.step;k++) toArr(st[k].label).forEach(o=>{ if(o&&o.id) labels.set(o.id,o.text) });
+  labels.forEach((text,id)=>{
+    const t = byId(svg,id); if(!t) return;
+    const inner = t.tagName==='text' ? t : q(t,'text.t') || q(t,'text');
+    if(inner) inner.textContent = text;
+  });
+
+  // 4) 批注标签：累积，untag 撤销
+  const tags = new Map();
+  for(let k=0;k<=S.step;k++){
+    toArr(st[k].tag  ).forEach(t=>{ if(t&&t.on) tags.set(t.on,t) });
+    toArr(st[k].untag).forEach(id=>tags.delete(id));
+  }
+  qa(svg,'.tag').forEach(t=>{ if(!tags.has(t.dataset.for)) t.remove() });
+  tags.forEach((t,on)=>{
+    const target = byId(svg,on); if(!target) return;
+    let node = q(svg,`.tag[data-for="${CSS.escape(on)}"]`);
+    if(!node){
+      node = svgEl('g',{class:'tag','data-for':on});
+      node.appendChild(svgEl('rect',{rx:6,height:22}));
+      node.appendChild(svgEl('text',{}));
+      svg.appendChild(node);
+    }
+    const txt = q(node,'text');
+    if(txt.textContent !== t.text) txt.textContent = t.text;
+    const w = txt.getComputedTextLength() + 18;
+    const rect = q(node,'rect');
+    rect.setAttribute('width', w);
+    txt.setAttribute('x', w/2); txt.setAttribute('y', 15);
+    node.dataset.tone = t.tone || 'acc';
+    const bb = target.getBBox();
+    node.setAttribute('transform', `translate(${(bb.x + bb.width/2 - w/2).toFixed(1)}, ${(bb.y - 30).toFixed(1)})`);
+  });
+
+  // 5) 瞬时效果：闪烁 + 数据包沿路径飞行
+  clearPackets(svg);
+  if(!animate) return;
+  toArr(cur.flash).forEach(id=>{
+    const nd = byId(svg,id); if(!nd) return;
+    nd.classList.remove('is-flash'); void nd.getBBox(); nd.classList.add('is-flash');
+  });
+  toArr(cur.packet).forEach(cfg=>startPacket(svg,cfg));
+}
+
+/* ---------- 数据包动画 ---------- */
+const pkts = new WeakMap();
+function clearPackets(svg){
+  const list = pkts.get(svg) || [];
+  list.forEach(g=>{ if(g._raf) cancelAnimationFrame(g._raf); g.remove() });
+  pkts.set(svg, []);
+}
+function startPacket(svg, cfg){
+  const path = byId(svg, cfg.path);
+  if(!path || typeof path.getTotalLength !== 'function' || !path.getTotalLength()){
+    console.warn('[deck] packet 路径无效：', cfg.path); return;
+  }
+  const L = path.getTotalLength();
+  const g = svgEl('g',{class:'pkt'});
+  g.appendChild(svgEl('circle',{r:7}));
+  g.appendChild(svgEl('rect',{class:'chip',rx:6,height:20}));
+  const txt = svgEl('text',{}); txt.textContent = cfg.text || '';
+  g.appendChild(txt);
+  svg.appendChild(g);
+
+  const w = txt.getComputedTextLength() + 18;
+  const chip = q(g,'.chip');
+  chip.setAttribute('width', w); chip.setAttribute('x', -w/2); chip.setAttribute('y', -34);
+  txt.setAttribute('x', 0); txt.setAttribute('y', -20);
+  if(cfg.tone) g.style.setProperty('--acc', `var(--${cfg.tone})`);
+
+  const list = pkts.get(svg) || []; list.push(g); pkts.set(svg, list);
+  const dur = Math.max(120, (cfg.dur||1200) / S.speed);
+  const t0 = performance.now();
+  (function frame(now){
+    const k = clamp((now - t0) / dur, 0, 1), e = easeInOut(k);
+    const pt = path.getPointAtLength(cfg.reverse ? (1-e)*L : e*L);
+    g.setAttribute('transform', `translate(${pt.x.toFixed(2)},${pt.y.toFixed(2)})`);
+    g.style.opacity = k < .05 ? k/.05 : (k > .95 ? (1-k)/.05 : 1);
+    if(k < 1) g._raf = requestAnimationFrame(frame);
+    else if(cfg.hold) setTimeout(()=>g.remove(), cfg.hold/S.speed);
+  })(t0);
+}
+
+/* ---------- 导航 ---------- */
+function atEnd(){
+  const st = stepsOf(DECK.slides[S.page]);
+  return S.page >= n-1 && S.step >= Math.max(0, st.length-1);
+}
+function advance(d){
+  const st = stepsOf(DECK.slides[S.page]);
+  if(st.length === 0){
+    const p = S.page + d;
+    if(p < 0 || p >= n){ pause(); return }
+    S.page = p; S.step = 0; renderSlide();
+  } else if(d > 0){
+    if(S.step < st.length-1) S.step++;
+    else if(S.page < n-1){ S.page++; S.step = 0; renderSlide() }
+    else { pause(); updateChrome(); return }
+  } else {
+    if(S.step > 0) S.step--;
+    else if(S.page > 0){ S.page--; renderSlide(); S.step = Math.max(0, stepsOf(DECK.slides[S.page]).length-1) }
+    else return;
+  }
+  applyStep(true); syncHash(); updateChrome();
+  if(S.playing) tick();
+}
+function jumpPage(d){
+  const p = clamp(S.page + d, 0, n-1);
+  if(p === S.page && d !== 0) return;
+  S.page = p; S.step = 0; renderSlide(); applyStep(false); syncHash(); updateChrome();
+}
+function go(page, step){
+  S.page = clamp(page, 0, n-1);
+  renderSlide();
+  S.step = clamp(step||0, 0, Math.max(0, stepsOf(DECK.slides[S.page]).length-1));
+  applyStep(false); syncHash(); updateChrome();
+}
+
+/* ---------- 播放 ---------- */
+function play(){
+  if(S.playing) return;
+  if(atEnd()) go(0,0);
+  S.playing = true; updateChrome(); tick();
+}
+function pause(){ S.playing = false; clearTimeout(S.timer); updateChrome() }
+function toggle(){ S.playing ? pause() : play() }
+function tick(){
+  clearTimeout(S.timer);
+  const st = stepsOf(DECK.slides[S.page]);
+  const dur = ((st[S.step] && st[S.step].dur) || 2400) / S.speed;
+  S.timer = setTimeout(()=>{
+    if(!S.playing) return;
+    if(atEnd()) { pause(); return }
+    advance(1);
+  }, dur);
+}
+
+/* ---------- 外观同步 ---------- */
+function updateChrome(){
+  const s = DECK.slides[S.page], st = stepsOf(s);
+  pager.textContent = st.length > 1
+    ? `${String(S.page+1).padStart(2,'0')} / ${String(n).padStart(2,'0')} · 步 ${S.step+1}/${st.length}`
+    : `${String(S.page+1).padStart(2,'0')} / ${String(n).padStart(2,'0')}`;
+  pbar.style.width = ((S.page + (st.length ? (S.step+1)/st.length : 1)) / n * 100).toFixed(2) + '%';
+  btnPlay.textContent = S.playing ? '❚❚ 暂停' : '▶ 播放';
+  qa(menu,'button[data-go]').forEach(b=>b.classList.toggle('on', Number(b.dataset.go) === S.page));
+  document.querySelector('[data-act="prev"]').disabled = (S.page === 0 && S.step === 0);
+  document.querySelector('[data-act="next"]').disabled = atEnd();
+}
+function syncHash(){
+  const st = stepsOf(DECK.slides[S.page]);
+  history.replaceState(null,'',`#p${S.page+1}${st.length>1?'s'+(S.step+1):''}`);
+}
+function readHash(){
+  const m = /#p(\d+)(?:s(\d+))?/.exec(location.hash||'');
+  if(!m) return null;
+  return { page: clamp(Number(m[1])-1, 0, n-1), step: m[2] ? Math.max(0,Number(m[2])-1) : 0 };
+}
+
+/* ---------- 目录 ---------- */
+function buildMenu(){
+  menu.querySelector('#menuGrid').innerHTML = DECK.slides.map((s,i)=>
+    `<button data-go="${i}"><i>${String(i+1).padStart(2,'0')}</i><span>${esc(s.menuTitle || s.title || s.kind)}</span></button>`
+  ).join('');
+  qa(menu,'button[data-go]').forEach(b=>b.addEventListener('click',()=>{ go(Number(b.dataset.go),0); closeMenu() }));
+}
+function openMenu(){ menu.hidden = false; updateChrome() }
+function closeMenu(){ menu.hidden = true }
+
+/* ---------- 事件 ---------- */
+document.querySelector('.dock').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-act]'); if(!b) return;
+  const a = b.dataset.act;
+  if(a === 'play') toggle();
+  else if(a === 'prev') advance(-1);
+  else if(a === 'next') advance(1);
+  else if(a === 'menu') menu.hidden ? openMenu() : closeMenu();
+});
+qa(document,'#spd button').forEach(b=>b.addEventListener('click',()=>{
+  S.speed = Number(b.dataset.spd);
+  qa(document,'#spd button').forEach(x=>x.classList.toggle('on', x === b));
+  if(S.playing) tick();
+}));
+stage.addEventListener('click', e=>{
+  const part = e.target.closest('.part');
+  if(part){
+    const g = part.dataset.goto;
+    const idx = /^\d+$/.test(g) ? Number(g)-1 : DECK.slides.findIndex(s=>s.id === g);
+    if(idx >= 0) go(idx, 0);
+    return;
+  }
+  if(e.target.closest('a')) return;
+  if(!S.playing) advance(1);
+});
+document.addEventListener('keydown', e=>{
+  if(e.target && e.target.matches && e.target.matches('input,textarea')) return;
+  const k = e.key;
+  if(k === 'Escape'){ closeMenu(); return }
+  if(k === 'm' || k === 'M'){ menu.hidden ? openMenu() : closeMenu(); return }
+  if(k === 'f' || k === 'F'){
+    if(document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen?.();
+    return;
+  }
+  if(k === 't' || k === 'T'){
+    const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try{ localStorage.setItem(LS_THEME, next) }catch(_){}
+    renderSlide(); applyStep(false);
+    return;
+  }
+  if(k === ' ' || k === 'Spacebar'){ e.preventDefault(); toggle(); return }
+  if(k === 'ArrowRight'){ e.preventDefault(); e.shiftKey ? jumpPage(1)  : advance(1); return }
+  if(k === 'ArrowLeft' ){ e.preventDefault(); e.shiftKey ? jumpPage(-1) : advance(-1); return }
+  if(k === 'ArrowDown' ){ e.preventDefault(); jumpPage(1);  return }
+  if(k === 'ArrowUp'   ){ e.preventDefault(); jumpPage(-1); return }
+  if(k === 'Home'){ e.preventDefault(); go(0,0); return }
+  if(k === 'End' ){ e.preventDefault(); go(n-1,0); return }
+});
+window.addEventListener('resize', ()=>{ if(DECK.slides[S.page].kind==='scene') applyStep(false) });
+
+/* ---------- 启动 ---------- */
+document.title = DECK.title || '知识动画课';
+document.getElementById('brand').textContent = DECK.title || '';
+document.getElementById('brandSub').textContent = DECK.subtitle || '';
+try{
+  const saved = localStorage.getItem(LS_THEME);
+  if(saved) document.documentElement.dataset.theme = saved;
+}catch(_){}
+buildMenu();
+const h = readHash();
+if(h) go(h.page, h.step); else go(0,0);
+})();
+</script>
+</body>
+</html>
