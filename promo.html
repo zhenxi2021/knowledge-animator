@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>让原理自己演给你看 · knowledge-animator</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#171b22; --panel2:#1f2530; --line:#2a313d; --line2:#3a4350;
+    --ink:#e8edf4; --mute:#9aa6b6; --acc:#4fd18b; --warn:#f0a860; --soft:#7aa2ff;
+    --t:.45s; --ease:cubic-bezier(.22,.61,.36,1);
+  }
+  html[data-theme="light"]{
+    --bg:#f6f8fb; --panel:#ffffff; --panel2:#eef2f7; --line:#dfe6ef; --line2:#c6d0dd;
+    --ink:#1b2230; --mute:#5e6b7e; --acc:#1f9d5c; --warn:#cf7d1e; --soft:#3b6fe0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    line-height:1.85;font-size:17px;transition:background var(--t),color var(--t);}
+  .wrap{max-width:760px;margin:0 auto;padding:56px 24px 96px;}
+  .topbar{display:flex;justify-content:flex-end;margin-bottom:8px}
+  .tg{cursor:pointer;border:1px solid var(--line2);background:var(--panel);color:var(--mute);
+    border-radius:999px;padding:6px 14px;font-size:13px;transition:all var(--t)}
+  .tg:hover{color:var(--ink);border-color:var(--soft)}
+  .kicker{color:var(--soft);font-size:13px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:14px}
+  h1{font-size:38px;line-height:1.25;margin:0 0 18px;font-weight:700;letter-spacing:-.5px}
+  .lede{font-size:19px;color:var(--mute);margin:0 0 36px}
+  p{margin:0 0 22px}
+  .demo{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    padding:20px 20px 16px;margin:30px 0;box-shadow:0 12px 40px rgba(0,0,0,.18);transition:all var(--t)}
+  html[data-theme="light"] .demo{box-shadow:0 12px 40px rgba(40,60,90,.08)}
+  .demo h3{margin:0 0 4px;font-size:16px;color:var(--ink)}
+  .demo .cap{margin:12px 2px 2px;font-size:14px;color:var(--mute)}
+  figure{margin:0}
+  svg{display:block;width:100%;height:auto}
+  .node .box{fill:var(--panel2);stroke:var(--line2);stroke-width:1.4;transition:all var(--t)}
+  .node .lbl{fill:var(--mute);font-size:11px;font-family:inherit}
+  .edge{fill:none;stroke:var(--line2);stroke-width:1.6;stroke-dasharray:4 5}
+  .pkt{fill:var(--acc);filter:drop-shadow(0 0 6px var(--acc));
+    offset-path:path("M90,90 C 200,30 280,150 340,90 S 480,30 590,90");
+    offset-rotate:0deg;animation:travel 3.4s linear infinite}
+  @keyframes travel{from{offset-distance:0%}to{offset-distance:100%}}
+  /* step reveal */
+  .step{opacity:0;transform-box:fill-box;transform-origin:center;
+    animation:pop 5s ease-in-out infinite}
+  @keyframes pop{0%{opacity:0;transform:scale(.5)}25%{opacity:1;transform:scale(1)}80%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.5)}}
+  /* slider lab */
+  .prm{display:flex;align-items:center;gap:12px;margin:6px 2px 14px;font-size:14px;color:var(--mute)}
+  .prm input[type=range]{flex:1;accent-color:var(--soft)}
+  .prm b{color:var(--ink);font-variant-numeric:tabular-nums;min-width:18px;text-align:center}
+  .out{font-size:14px;color:var(--mute);margin:2px 2px 0}
+  .out .t{font-weight:600}
+  .hl{color:var(--acc)} .hlw{color:var(--warn)}
+  blockquote{margin:34px 0;padding:16px 20px;border-left:3px solid var(--soft);
+    background:var(--panel);border-radius:0 12px 12px 0;color:var(--mute);font-size:15px}
+  code{background:var(--panel2);padding:2px 7px;border-radius:6px;font-size:14px;color:var(--ink);
+    font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+  .steps{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 22px;margin:22px 0;font-size:15px}
+  .steps li{margin:8px 0}
+  .foot{margin-top:56px;padding-top:22px;border-top:1px solid var(--line);color:var(--mute);font-size:14px}
+  a{color:var(--soft);text-decoration:none}
+  a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><button class="tg" id="tg">☀ / 🌙 换肤</button></div>
+
+  <div class="kicker">一个小工具的自白</div>
+  <h1>让原理自己演给你看</h1>
+  <p class="lede">我做了一个叫 <b>knowledge-animator</b> 的东西。它不神奇，不能替你想清楚原理；它只做一件事——把你想清楚的东西，变成一份能播放的动画课件。</p>
+
+  <p>你大概也有过这种时刻：盯着一篇讲 TCP 拥塞控制、或者 Tailscale 怎么组网的长文，段落一行行往下读，脑子里却怎么也拼不出那股"流动"。文字是静止的，可网络里的包是活的——它们一来一回、一拥一退，在 NAT 后面悄悄打个洞又缩回去。</p>
+
+  <p>我自己就常被这种"知道，但没看见"卡住。画过的架构图能铺满一整面墙，可图是死的：谁先动、谁后动、哪条线其实根本没通，全得靠读者自己在脑补里补帧。补不上的时候，原理就停在"我好像懂了"的门口。</p>
+
+  <p>后来我想，与其再写长一点，不如让它能动。下面这三个小动画，就是这份课件里真实会发生的样子——不是截图，是活的。</p>
+
+  <div class="demo">
+    <h3>① 一个包，是怎么走完一段链路的</h3>
+    <figure>
+      <svg viewBox="0 0 680 180" role="img" aria-label="数据包沿链路传输动画">
+        <path id="p1" class="edge" d="M90,90 C 200,30 280,150 340,90 S 480,30 590,90"/>
+        <g class="node"><rect class="box" x="62" y="70" width="56" height="40" rx="9"/><text class="lbl" x="90" y="128" text-anchor="middle">你的设备</text></g>
+        <g class="node"><rect class="box" x="312" y="70" width="56" height="40" rx="9"/><text class="lbl" x="340" y="128" text-anchor="middle">中间节点</text></g>
+        <g class="node"><rect class="box" x="562" y="70" width="56" height="40" rx="9"/><text class="lbl" x="590" y="128" text-anchor="middle">对端</text></g>
+        <circle class="pkt" r="6"/>
+      </svg>
+    </figure>
+    <p class="cap">一次请求：从你设备出发，经过节点，到达对端。绿点就是那个在跑的包——它走过的路，就是文字里那句"转发"真正发生的过程。</p>
+  </div>
+
+  <p>这第一帧，解决的是"静止"的问题。但更让我舒服的，是下面这个——它把"理解"也拆成了一格一格。</p>
+
+  <div class="demo">
+    <h3>② 每按一次 →，就揭开一帧</h3>
+    <figure>
+      <svg viewBox="0 0 680 150" role="img" aria-label="逐步揭示动画">
+        <g class="node"><rect class="step" x="62"  y="55" width="56" height="40" rx="9" style="animation-delay:0s"/><text class="lbl" x="90"  y="115" text-anchor="middle">登录</text></g>
+        <g class="node"><rect class="step" x="197" y="55" width="56" height="40" rx="9" style="animation-delay:.6s"/><text class="lbl" x="225" y="115" text-anchor="middle">生密钥</text></g>
+        <g class="node"><rect class="step" x="332" y="55" width="56" height="40" rx="9" style="animation-delay:1.2s"/><text class="lbl" x="360" y="115" text-anchor="middle">报公钥</text></g>
+        <g class="node"><rect class="step" x="467" y="55" width="56" height="40" rx="9" style="animation-delay:1.8s"/><text class="lbl" x="495" y="115" text-anchor="middle">拉 netmap</text></g>
+        <g class="node"><rect class="step" x="602" y="55" width="56" height="40" rx="9" style="animation-delay:2.4s"/><text class="lbl" x="630" y="115" text-anchor="middle">建 mesh</text></g>
+      </svg>
+    </figure>
+    <p class="cap">五个步骤，逐个亮起。你可以按空格让它自己一路演下去，也可以手动一帧帧推进——讲到哪、停在哪，节奏在你手里。复杂的东西，往往是被"一次全倒出来"吓退的；一格一格，反而轻。</p>
+  </div>
+
+  <p>做到这一步，其实已经够用了。但我总觉得还差一口气：能看，能不能摸？于是有了第三样东西——实验页。</p>
+
+  <div class="demo">
+    <h3>③ 你亲手拖一下，看见"条件变了会怎样"</h3>
+    <div class="prm">
+      <span>NAT 严格程度</span>
+      <input type="range" id="nat" min="0" max="10" value="2">
+      <b id="natval">2</b>
+    </div>
+    <figure>
+      <svg viewBox="0 0 680 170" role="img" aria-label="NAT 穿透与中转切换实验">
+        <g class="node"><rect class="box" x="42" y="70" width="56" height="40" rx="9"/><text class="lbl" x="70" y="128" text-anchor="middle">设备 A</text></g>
+        <g class="node"><rect class="box" x="312" y="36" width="56" height="34" rx="8"/><text class="lbl" x="340" y="92" text-anchor="middle">DERP 中继</text></g>
+        <g class="node"><rect class="box" x="582" y="70" width="56" height="40" rx="9"/><text class="lbl" x="610" y="128" text-anchor="middle">设备 B</text></g>
+        <path id="natline" class="edge" d="M90,90 L590,90" stroke="var(--acc)" style="stroke-dasharray:0"/>
+        <text id="nattag" x="340" y="150" text-anchor="middle" style="fill:var(--acc);font-size:13px;font-weight:600">P2P 直连</text>
+      </svg>
+    </figure>
+    <p class="out">当前：<span class="t hl" id="natt">P2P 直连</span> · <span id="natlabel">延迟 ≈ 20ms · 端到端加密，不经第三方</span></p>
+    <p class="cap">把滑块往右拖过一半，直连打不通了，连线自己折向中继、颜色也变橙——这正是 Tailscale 在"打洞失败就走 DERP"时的真实行为。读者不是被告知，而是亲手试出来。</p>
+  </div>
+
+  <blockquote>它不替你思考，但它把"想清楚的东西"演得清清楚楚。对我来说，这就够了——因为大多数时候，卡住的不是脑子，是画面。</blockquote>
+
+  <p>整份课件是<strong>一个零依赖的 HTML 文件</strong>，约 60KB，双击就能在任何浏览器打开。暗色、亮色两套主题，目录、全屏、深链都齐了。更踏实的是，每一份在交付前都会过三道关：结构自检（引用的节点 ID 是不是真存在）、浏览器冒烟（真跑一遍会不会报错）、还有我盯着关键页截的图——布局有没有溢出、标签有没有挤在一起。</p>
+
+  <p>它已经自带两份成品当样例：一份讲 <b>TCP 拥塞控制</b>（慢启动、拥塞避免、还有那条会自己长的 cwnd 曲线），一份讲 <b>Tailscale 怎么工作</b>（NAT 打洞、DERP 兜底、零配置组网）。你看到的上面三个动画，就是它们里头的真实片段。</p>
+
+  <div class="steps">
+    <strong>想自己做一个，大概是这样：</strong>
+    <ol>
+      <li>拿 <code>assets/starter.deck.js</code> 当底，改里面的 <code>slides</code> 数组；</li>
+      <li><code>node scripts/check.mjs 你的deck.js</code> —— 静态自检；</li>
+      <li><code>node scripts/build.mjs 你的deck.js</code> —— 生成单文件 HTML；</li>
+      <li><code>node scripts/smoke.mjs 你的deck.js</code> —— 真浏览器跑一遍；</li>
+      <li>打开 HTML，按空格，看它活过来。</li>
+    </ol>
+  </div>
+
+  <p>如果你愿意，它也能一键装到 claude / codex / workbuddy / qoder / openclaw / opencode 这些环境里——<code>./install.sh</code> 会自己认出你装了哪些。但我最希望的，其实是你拿它去讲一个<em>你心里惦记很久、却一直没讲顺</em>的东西。</p>
+
+  <p>毕竟，能让一个人"啊，原来是这样"地笑一下，比任何漂亮的参数都值钱。</p>
+
+  <div class="foot">
+    工具叫 <b>knowledge-animator</b> · 单文件 HTML 课件 · 可播放 / 可步进 / 可实验。<br>
+    样例：TCP 拥塞控制 · Tailscale 工作原理 —— 都在 <code>examples/</code> 里，点开即看。
+  </div>
+</div>
+
+<script>
+  // 主题切换（记忆）
+  (function(){
+    var root=document.documentElement, tg=document.getElementById('tg');
+    var s=localStorage.getItem('ka_theme'); if(s) root.dataset.theme=s;
+    tg.addEventListener('click',function(){
+      var n=root.dataset.theme==='light'?'':'light';
+      root.dataset.theme=n; localStorage.setItem('ka_theme',n||'');
+    });
+  })();
+  // 实验页：NAT 严格程度 → 直连 / 中转
+  (function(){
+    var sld=document.getElementById('nat'), val=document.getElementById('natval'),
+        line=document.getElementById('natline'), tag=document.getElementById('nattag'),
+        t=document.getElementById('natt'), lab=document.getElementById('natlabel');
+    function upd(){
+      var v=+sld.value; val.textContent=v;
+      if(v<5){
+        line.setAttribute('d','M90,90 L590,90');
+        line.style.stroke='var(--acc)'; line.style.strokeDasharray='0';
+        tag.style.fill='var(--acc)'; tag.textContent='P2P 直连';
+        t.textContent='P2P 直连'; t.className='t hl';
+        lab.textContent='延迟 ≈ 20ms · 端到端加密，不经第三方';
+      }else{
+        line.setAttribute('d','M90,90 L340,53 L590,90');
+        line.style.stroke='var(--warn)'; line.style.strokeDasharray='6 5';
+        tag.style.fill='var(--warn)'; tag.textContent='走 DERP 中转';
+        t.textContent='走 DERP 中转'; t.className='t hlw';
+        lab.textContent='延迟 ≈ 180ms · 由中继转发，但仍只搬运不解密';
+      }
+    }
+    sld.addEventListener('input',upd); upd();
+  })();
+</script>
+</body>
+</html>

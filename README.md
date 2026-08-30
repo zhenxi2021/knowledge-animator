@@ -86,7 +86,17 @@ URL 支持深链：`deck.html#p6s3` = 第 6 页第 3 步。
 - `references/scene-patterns.md` —— 8 种知识类型的图示套路
 - `references/narrative-structure.md` —— 页数与叙事结构怎么拆
 
-## 示例
+## 示例（点开看效果）
 
-- `examples/tcp-congestion-control/` —— TCP 慢启动 / 拥塞避免 / 快速恢复，含 cwnd 曲线实验
-- `examples/tailscale-how-it-works/` —— 节点 / 控制面 / DERP 中继 / NAT 打洞，含严格 NAT 滑块实验
+**公开访问（GitHub Pages，任何人直接点开即播放）：**
+
+- 📊 [TCP 拥塞控制](https://zhenxi2021.github.io/knowledge-animator/examples/tcp-congestion-control/deck.html) —— 慢启动 / 拥塞避免 / 快速恢复，含 cwnd 曲线实验
+- 🔗 [Tailscale 工作原理](https://zhenxi2021.github.io/knowledge-animator/examples/tailscale-how-it-works/deck.html) —— 节点 / 控制面 / DERP 中继 / NAT 打洞，含严格 NAT 滑块实验
+- 🏠 [推广软文（含动态 demo）](https://zhenxi2021.github.io/knowledge-animator/)
+
+**仓库内相对链接（本地 IDE 预览 / GitLab / 部分 wiki 中点击即播放）：**
+
+- [TCP 拥塞控制](examples/tcp-congestion-control/deck.html)
+- [Tailscale 工作原理](examples/tailscale-how-it-works/deck.html)
+
+> 公开链接由 `.github/workflows/pages.yml` 在每次 push 到 `main` 时自动构建并部署到 GitHub Pages。站点根目录为推广软文 `promo.html`（已复制为 `index.html`）。首次启用需在仓库 **Settings → Pages → Source** 选择 **GitHub Actions**。
