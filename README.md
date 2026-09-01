@@ -92,7 +92,6 @@ URL 支持深链：`deck.html#p6s3` = 第 6 页第 3 步。
 
 - 📊 [TCP 拥塞控制](https://zhenxi2021.github.io/knowledge-animator/examples/tcp-congestion-control/deck.html) —— 慢启动 / 拥塞避免 / 快速恢复，含 cwnd 曲线实验
 - 🔗 [Tailscale 工作原理](https://zhenxi2021.github.io/knowledge-animator/examples/tailscale-how-it-works/deck.html) —— 节点 / 控制面 / DERP 中继 / NAT 打洞，含严格 NAT 滑块实验
-- 🏠 [推广软文（含动态 demo）](https://zhenxi2021.github.io/knowledge-animator/)
 
 **仓库内相对链接（本地 IDE 预览 / GitLab / 部分 wiki 中点击即播放）：**
 
